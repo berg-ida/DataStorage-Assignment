@@ -20,13 +20,13 @@ public class ProjectEntity
     public string Status { get; set; } = null!;
 
     [Required]
-    public int TimeId { get; set; }
+    public int TimePeriodId { get; set; }
 
     [Required]
     public TimeEntity TimePeriod { get; set; } = null!;
 
     [Required]
-    public int ManagerId { get; set; }
+    public int ProjectManagerId { get; set; }
 
     [Required]
     public ManagerEntity ProjectManager { get; set; } = null!;

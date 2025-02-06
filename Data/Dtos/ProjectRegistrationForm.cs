@@ -17,4 +17,11 @@ public class ProjectRegistrationForm
     public Manager ProjectManager { get; set; } = null!;
 
     public Client Client { get; set; } = null!;
+
+    public int TimePeriodId { get; set; }
+
+    public int ProjectManagerId { get; set; }
+
+    public int ClientId { get; set; }
+
 }

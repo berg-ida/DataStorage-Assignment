@@ -35,7 +35,11 @@ public class ProjectRepository(DataContext context) : IProjectRepository
     //Read
     public async Task<IEnumerable<ProjectEntity>> GetAllAsync()
     {
-        var entities = await _context.Projects.ToListAsync();
+        var entities = await _context.Projects
+            .Include(p => p.TimePeriod)
+            .Include(p => p.ProjectManager)
+            .Include(p => p.Client)
+            .ToListAsync();
         return entities;
     }
 
@@ -46,7 +50,11 @@ public class ProjectRepository(DataContext context) : IProjectRepository
             return null!;
         }
 
-        var entity = await _context.Projects.FirstOrDefaultAsync(expression) ?? null!;
+        var entity = await _context.Projects
+            .Include(p => p.TimePeriod)
+            .Include(p => p.ProjectManager)
+            .Include(p => p.Client)
+            .FirstOrDefaultAsync(expression) ?? null!;
         return entity;
     }
 
@@ -57,9 +65,34 @@ public class ProjectRepository(DataContext context) : IProjectRepository
         {
             return false;
         }
+
         try
         {
-            _context.Update(updatedEntity);
+            var existingEntity = await _context.Projects
+                .Include(p => p.TimePeriod)
+                .Include(p => p.ProjectManager)
+                .Include(p => p.Client)
+                .FirstOrDefaultAsync(p => p.Id == updatedEntity.Id);
+
+            if (existingEntity == null)
+            {
+                return false;
+            }
+
+            existingEntity.Name = updatedEntity.Name;
+            existingEntity.ServiceName = updatedEntity.ServiceName;
+            existingEntity.Price = updatedEntity.Price;
+            existingEntity.Status = updatedEntity.Status;
+            existingEntity.TimePeriod.StartDay = updatedEntity.TimePeriod.StartDay;
+            existingEntity.TimePeriod.StartMonth = updatedEntity.TimePeriod.StartMonth;
+            existingEntity.TimePeriod.StartYear = updatedEntity.TimePeriod.StartYear;
+            existingEntity.TimePeriod.EndDay = updatedEntity.TimePeriod.EndDay;
+            existingEntity.TimePeriod.EndMonth = updatedEntity.TimePeriod.EndMonth;
+            existingEntity.TimePeriod.EndYear = updatedEntity.TimePeriod.EndYear;
+            existingEntity.ProjectManager.FirstName = updatedEntity.ProjectManager.FirstName;
+            existingEntity.ProjectManager.LastName = updatedEntity.ProjectManager.LastName;
+            existingEntity.Client.CompanyName = updatedEntity.Client.CompanyName;
+
             await _context.SaveChangesAsync();
             return true;
         }
@@ -69,6 +102,7 @@ public class ProjectRepository(DataContext context) : IProjectRepository
             return false;
         }
     }
+   
 
     //Delete
     public async Task<bool> DeleteAsync(int id)
