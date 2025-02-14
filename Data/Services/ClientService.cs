@@ -1,7 +1,8 @@
 ﻿using Business.Models;
 using Data.Dtos;
-using Data.Entites;
+using Data.Factories;
 using Data.Interfaces;
+using System.ComponentModel.DataAnnotations;
 
 namespace Data.Services;
 
@@ -12,10 +13,12 @@ public class ClientService(IClientRepository clientRepository) : IClientService
     //Create
     public async Task<bool> CreateClientAsync(ClientRegistrationForm form)
     {
-        var client = new ClientEntity
+        var client = ClientFactory.Create(form);
+        if (client == null)
         {
-            CompanyName = form.CompanyName,
-        };
+            Console.WriteLine("The client object is null");
+            return false;
+        }
 
         var result = await _clientRepository.CreateAsync(client);
         return result;
@@ -25,7 +28,13 @@ public class ClientService(IClientRepository clientRepository) : IClientService
     public async Task<IEnumerable<Client>> GetClientsAsync()
     {
         var clients = await _clientRepository.GetAllAsync();
-        return clients.Select(x => new Client(x.Id, x.CompanyName));
+        return clients.Select(ClientFactory.Create);
+    }
+
+    public async Task<Client?> GetClientByIdAsync(int id)
+    {
+        var client = await _clientRepository.GetAsync(x => x.Id == id);
+        return client != null ? ClientFactory.Create(client) : null;
     }
 
     //Update 
@@ -37,15 +46,17 @@ public class ClientService(IClientRepository clientRepository) : IClientService
             return null;
         }
 
-        client = new ClientEntity
+        client.CompanyName = form.CompanyName;
+        
+        var result = await _clientRepository.UpdateAsync(client);
+        
+        if (result)
         {
-            CompanyName = form.CompanyName
-        };
+            var updatedClient = await _clientRepository.GetAsync(x => x.Id == form.Id);
+            return updatedClient != null ? ClientFactory.Create(updatedClient) : null; 
+        }
 
-        await _clientRepository.UpdateAsync(client);
-
-        client = await _clientRepository.GetAsync(x => x.Id == form.Id);
-        return client != null ? new Client(client.Id, client.CompanyName) : null;
+        return null;
     }
 
     //Delete

@@ -1,8 +1,7 @@
 ﻿using Data.Interfaces;
 using Business.Models;
 using Data.Dtos;
-using Microsoft.EntityFrameworkCore.SqlServer.Query.Internal;
-using Data.Entites;
+using Data.Factories;
 
 namespace Data.Services;
 
@@ -13,25 +12,28 @@ public class TimeService(ITimeRepository timeRepository) : ITimeService
     //Create
     public async Task<bool> CreateTimeAsync(TimeRegistrationForm form)
     {
-        var time = new TimeEntity
+        var time = TimeFactory.Create(form);
+        if (time == null)
         {
-            StartDay = form.StartDay,
-            StartMonth = form.StartMonth,
-            StartYear = form.StartYear,
-            EndDay = form.EndDay,
-            EndMonth = form.EndMonth,
-            EndYear = form.EndYear,
-        };
+            Console.WriteLine("The time period is null");
+            return false;
+        }
 
         var result = await _timeRepository.CreateAsync(time);
         return result;
     }
 
     //Read
-    public async Task<IEnumerable<Time>> GetTimesAsync()
+    public async Task<IEnumerable<Time>> GetTimePeriodsAsync()
     {
         var timePeriods = await _timeRepository.GetAllAsync();
-        return timePeriods.Select(x => new Time(x.Id, x.StartDay, x.StartMonth, x.StartYear, x.EndDay, x.EndMonth, x.EndYear));
+        return timePeriods.Select(TimeFactory.Create);
+    }
+
+    public async Task<Time?> GetTimeByIdAsync(int id)
+    {
+        var time = await _timeRepository.GetAsync(x => x.Id == id);
+        return time != null ? TimeFactory.Create(time) : null;
     }
 
     //Update 
@@ -43,20 +45,22 @@ public class TimeService(ITimeRepository timeRepository) : ITimeService
             return null;
         }
 
-        time = new TimeEntity
+        time.StartDay = form.StartDay;
+        time.StartMonth = form.StartMonth;
+        time.StartYear = form.StartYear;
+        time.EndDay = form.EndDay;
+        time.EndMonth = form.EndMonth;
+        time.EndYear = form.EndYear;
+
+        var result = await _timeRepository.UpdateAsync(time);
+
+        if (result)
         {
-            StartDay = form.StartDay,
-            StartMonth = form.StartMonth,
-            StartYear = form.StartYear,
-            EndDay = form.EndDay,
-            EndMonth = form.EndMonth,
-            EndYear = form.EndYear,
-        };
+            var updatedTime = await _timeRepository.GetAsync(x => x.Id == form.Id);
+            return updatedTime != null ? TimeFactory.Create(updatedTime) : null;
+        }
 
-        await _timeRepository.UpdateAsync(time);
-
-        time = await _timeRepository.GetAsync(x => x.Id == form.Id);
-        return time != null ? new Time(time.Id, time.StartDay, time.StartMonth, time.StartYear, time.EndDay, time.EndMonth, time.EndYear) : null;
+        return null;
     }
 
     //Delete

@@ -1,6 +1,4 @@
-﻿using Data.Services;
-using Data.Interfaces;
-using Data.Dtos;
+﻿using Data.Interfaces;
 using Presentation.Interfaces;
 using Business.Models;
 using Data.Factories;
@@ -19,11 +17,11 @@ public class ProjectDialogs(IProjectService projectService) : IProjectDialogs
             Console.Clear();
             Console.WriteLine("-----------PROJECT SYSTEM-----------");
             Console.WriteLine("");
-            Console.WriteLine($"{"[1]",-10} Create a project. ");
-            Console.WriteLine($"{"[2]",-10} View all projects. ");
+            Console.WriteLine($"{"[1]",-10} Create a project.");
+            Console.WriteLine($"{"[2]",-10} View all projects.");
             Console.WriteLine($"{"[3]",-10} Update a project.");
             Console.WriteLine($"{"[4]",-10} Delete a project.");
-            Console.WriteLine($"{"[5]",-10} Quit application");
+            Console.WriteLine($"{"[5]",-10} Quit application.");
             var option = Console.ReadLine();
 
             switch (option)
@@ -190,10 +188,11 @@ public class ProjectDialogs(IProjectService projectService) : IProjectDialogs
                     $"{project.TimePeriod.EndMonth}/" +
                     $"{project.TimePeriod.EndYear}");
                 Console.WriteLine($"{"Manager: ",-10}" +
-                    $" {project.ProjectManager.FirstName} " +
+                    $"{project.ProjectManager.FirstName} " +
                     $"{project.ProjectManager.LastName}");
                 Console.WriteLine($"{"Client: ",-10} {project.Client.CompanyName}");
                 Console.WriteLine($"{"Status: ",-10} {project.Status}");
+                Console.WriteLine("");
             }
         }
         else
@@ -233,7 +232,7 @@ public class ProjectDialogs(IProjectService projectService) : IProjectDialogs
                     $"{project.TimePeriod.EndMonth}/" +
                     $"{project.TimePeriod.EndYear}");
                 Console.WriteLine($"{"Manager: ",-10}" +
-                    $" {project.ProjectManager.FirstName} " +
+                    $"{project.ProjectManager.FirstName} " +
                     $"{project.ProjectManager.LastName}");
                 Console.WriteLine($"{"Client: ",-10} {project.Client.CompanyName}");
                 Console.WriteLine($"{"Status: ",-10} {project.Status}");
@@ -241,6 +240,31 @@ public class ProjectDialogs(IProjectService projectService) : IProjectDialogs
 
                 var projectUpdateForm = ProjectFactory.CreateUpdateForm();
                 projectUpdateForm.Id = project.Id;
+                projectUpdateForm.Name = project.Name;
+                projectUpdateForm.ServiceName = project.ServiceName;
+                projectUpdateForm.Price = project.Price;
+                projectUpdateForm.Status = project.Status;
+                projectUpdateForm.TimePeriod = new Time
+                {
+                    StartDay = project.TimePeriod.StartDay,
+                    StartMonth = project.TimePeriod.StartMonth,
+                    StartYear = project.TimePeriod.StartYear,
+                    EndDay = project.TimePeriod.EndDay,
+                    EndMonth = project.TimePeriod.EndMonth,
+                    EndYear = project.TimePeriod.EndYear
+                };
+                projectUpdateForm.ProjectManager = new Manager
+                {
+                    FirstName = project.ProjectManager.FirstName,
+                    LastName = project.ProjectManager.LastName
+                };
+                projectUpdateForm.Client = new Client
+                {
+                    CompanyName = project.Client.CompanyName
+                };
+                projectUpdateForm.TimePeriodId = project.TimePeriodId;
+                projectUpdateForm.ProjectManagerId = project.ProjectManagerId;
+                projectUpdateForm.ClientId = project.ClientId;
 
                 Console.Clear();
                 Console.WriteLine("----------UPDATE PROJECT------------");

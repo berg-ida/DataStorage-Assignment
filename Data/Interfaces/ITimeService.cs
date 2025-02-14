@@ -7,7 +7,8 @@ namespace Data.Interfaces
     {
         Task<bool> CreateTimeAsync(TimeRegistrationForm form);
         Task<bool> DeleteTimeAsync(int id);
-        Task<IEnumerable<Time>> GetTimesAsync();
+        Task<Time?> GetTimeByIdAsync(int id);
+        Task<IEnumerable<Time>> GetTimePeriodsAsync();
         Task<Time?> UpdateTimeAsync(TimeUpdateForm form);
     }
 }

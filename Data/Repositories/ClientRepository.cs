@@ -59,7 +59,13 @@ namespace Data.Repositories
             }
             try
             {
-                _context.Update(updatedEntity);
+                var existingEntity = await _context.Clients.FindAsync(updatedEntity.Id);
+                if (existingEntity == null)
+                {
+                    return false;
+                }
+
+                _context.Entry(existingEntity).CurrentValues.SetValues(updatedEntity);
                 await _context.SaveChangesAsync();
                 return true;
             }

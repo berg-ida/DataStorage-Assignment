@@ -1,6 +1,6 @@
 ﻿using Business.Models;
 using Data.Dtos;
-using Data.Entites;
+using Data.Factories;
 using Data.Interfaces;
 
 namespace Data.Services;
@@ -12,11 +12,12 @@ public class ManagerService(IManagerRepository managerRepository) : IManagerServ
     //Create
     public async Task<bool> CreateManagerAsync(ManagerRegistrationForm form)
     {
-        var manager = new ManagerEntity
+        var manager = ManagerFactory.Create(form);
+        if (manager == null)
         {
-            FirstName = form.FirstName,
-            LastName = form.LastName,
-        };
+            Console.WriteLine("The manager object is null");
+            return false;
+        }
 
         var result = await _managerRepository.CreateAsync(manager);
         return result;
@@ -25,8 +26,14 @@ public class ManagerService(IManagerRepository managerRepository) : IManagerServ
     //Read
     public async Task<IEnumerable<Manager>> GetManagersAsync()
     {
-        var projectManagers = await _managerRepository.GetAllAsync();
-        return projectManagers.Select(x => new Manager(x.Id, x.FirstName, x.LastName));
+        var managers = await _managerRepository.GetAllAsync();
+        return managers.Select(ManagerFactory.Create);
+    }
+
+    public async Task<Manager?> GetManagerByIdAsync(int id)
+    {
+        var manager = await _managerRepository.GetAsync(x => x.Id == id);
+        return manager != null ? ManagerFactory.Create(manager) : null;
     }
 
     //Update 
@@ -38,16 +45,18 @@ public class ManagerService(IManagerRepository managerRepository) : IManagerServ
             return null;
         }
 
-        manager = new ManagerEntity
+        manager.FirstName = form.FirstName;
+        manager.LastName = form.LastName;
+
+        var result = await _managerRepository.UpdateAsync(manager);
+
+        if (result)
         {
-            FirstName = form.FirstName,
-            LastName = form.LastName,
-        };
-
-        await _managerRepository.UpdateAsync(manager);
-
-        manager = await _managerRepository.GetAsync(x => x.Id == form.Id);
-        return manager != null ? new Manager(manager.Id, manager.FirstName, manager.LastName) : null;
+            var updatedManager = await _managerRepository.GetAsync(x => x.Id == form.Id);
+            return updatedManager != null ? ManagerFactory.Create(updatedManager) : null;
+        }
+        
+        return null;
     }
 
     //Delete

@@ -12,7 +12,26 @@ var services = new ServiceCollection()
     .AddScoped<IProjectRepository, ProjectRepository>()
     .AddScoped<IProjectService, ProjectService>()
     .AddScoped<IProjectDialogs, ProjectDialogs>()
+    //.AddScoped<ITimeRepository, TimeRepository>()
+    //.AddScoped<ITimeService, TimeService>()
+    //.AddScoped<ITimeDialogs, TimeDialogs>()
+    //.AddScoped<IManagerRepository, ManagerRepository>()
+    //.AddScoped<IManagerService, ManagerService>()
+    //.AddScoped<IManagerDialogs, ManagerDialogs>()
+    //.AddScoped<IClientRepository, ClientRepository>()
+    //.AddScoped<IClientService, ClientService>()
+    //.AddScoped<IClientDialogs, ClientDialogs>()
     .BuildServiceProvider();
+
+//var clientDialogs = services.GetRequiredService<IClientDialogs>();
+//await clientDialogs.MenuOptions();
+
+//var managerDialogs = services.GetRequiredService<IManagerDialogs>();
+//await managerDialogs.MenuOptions();
+
+//var timeDialogs = services.GetRequiredService<ITimeDialogs>();
+//await timeDialogs.MenuOptions();
 
 var projectDialogs = services.GetRequiredService<IProjectDialogs>();
 await projectDialogs.MenuOptions();
+
