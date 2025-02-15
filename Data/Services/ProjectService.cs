@@ -47,7 +47,7 @@ public class ProjectService(IProjectRepository projectRepository) : IProjectServ
 
         project = ProjectFactory.Create(project.Id, form);
 
-        await _projectRepository.UpdateAsync(project);
+        await _projectRepository.UpdateAsync(x => x.Id == form.Id, project);
 
         project = await _projectRepository.GetAsync(x => x.Id == form.Id);
         return project != null ? ProjectFactory.Create(project) : null;
@@ -62,7 +62,7 @@ public class ProjectService(IProjectRepository projectRepository) : IProjectServ
             return false;
         }
 
-        var result = await _projectRepository.DeleteAsync(project.Id);
+        var result = await _projectRepository.DeleteAsync(x => x.Id == project.Id);
         return result;
     }
 }

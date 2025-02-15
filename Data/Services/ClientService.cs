@@ -2,7 +2,6 @@
 using Data.Dtos;
 using Data.Factories;
 using Data.Interfaces;
-using System.ComponentModel.DataAnnotations;
 
 namespace Data.Services;
 
@@ -48,15 +47,9 @@ public class ClientService(IClientRepository clientRepository) : IClientService
 
         client.CompanyName = form.CompanyName;
         
-        var result = await _clientRepository.UpdateAsync(client);
-        
-        if (result)
-        {
-            var updatedClient = await _clientRepository.GetAsync(x => x.Id == form.Id);
-            return updatedClient != null ? ClientFactory.Create(updatedClient) : null; 
-        }
-
-        return null;
+        var result = await _clientRepository.UpdateAsync(x => x.Id == form.Id, client);
+        var updatedClient = await _clientRepository.GetAsync(x => x.Id == form.Id);
+        return updatedClient != null ? ClientFactory.Create(updatedClient) : null; 
     }
 
     //Delete
@@ -68,7 +61,7 @@ public class ClientService(IClientRepository clientRepository) : IClientService
             return false;
         }
 
-        var result = await _clientRepository.DeleteAsync(client.Id);
+        var result = await _clientRepository.DeleteAsync(x => x.Id == client.Id);
         return result;
     }
 }

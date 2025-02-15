@@ -52,15 +52,9 @@ public class TimeService(ITimeRepository timeRepository) : ITimeService
         time.EndMonth = form.EndMonth;
         time.EndYear = form.EndYear;
 
-        var result = await _timeRepository.UpdateAsync(time);
-
-        if (result)
-        {
-            var updatedTime = await _timeRepository.GetAsync(x => x.Id == form.Id);
-            return updatedTime != null ? TimeFactory.Create(updatedTime) : null;
-        }
-
-        return null;
+        var result = await _timeRepository.UpdateAsync(x => x.Id == form.Id, time);
+        var updatedTime = await _timeRepository.GetAsync(x => x.Id == form.Id);
+        return updatedTime != null ? TimeFactory.Create(updatedTime) : null;
     }
 
     //Delete
@@ -72,7 +66,7 @@ public class TimeService(ITimeRepository timeRepository) : ITimeService
             return false;
         }
 
-        var result = await _timeRepository.DeleteAsync(time.Id);
+        var result = await _timeRepository.DeleteAsync(x => x.Id == time.Id);
         return result;
     }
 }

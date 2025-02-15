@@ -48,15 +48,9 @@ public class ManagerService(IManagerRepository managerRepository) : IManagerServ
         manager.FirstName = form.FirstName;
         manager.LastName = form.LastName;
 
-        var result = await _managerRepository.UpdateAsync(manager);
-
-        if (result)
-        {
-            var updatedManager = await _managerRepository.GetAsync(x => x.Id == form.Id);
-            return updatedManager != null ? ManagerFactory.Create(updatedManager) : null;
-        }
-        
-        return null;
+        var result = await _managerRepository.UpdateAsync(x => x.Id == form.Id, manager);
+        var updatedManager = await _managerRepository.GetAsync(x => x.Id == form.Id);
+        return updatedManager != null ? ManagerFactory.Create(updatedManager) : null;
     }
 
     //Delete
@@ -68,7 +62,7 @@ public class ManagerService(IManagerRepository managerRepository) : IManagerServ
             return false;
         }
 
-        var result = await _managerRepository.DeleteAsync(manager.Id);
+        var result = await _managerRepository.DeleteAsync(x => x.Id == manager.Id);
         return result;
     }
 }

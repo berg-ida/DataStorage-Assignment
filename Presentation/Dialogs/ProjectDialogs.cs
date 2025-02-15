@@ -187,7 +187,7 @@ public class ProjectDialogs(IProjectService projectService) : IProjectDialogs
                     $"{project.TimePeriod.EndDay}/" +
                     $"{project.TimePeriod.EndMonth}/" +
                     $"{project.TimePeriod.EndYear}");
-                Console.WriteLine($"{"Manager: ",-10}" +
+                Console.WriteLine($"{"Manager: ",-10} " +
                     $"{project.ProjectManager.FirstName} " +
                     $"{project.ProjectManager.LastName}");
                 Console.WriteLine($"{"Client: ",-10} {project.Client.CompanyName}");
