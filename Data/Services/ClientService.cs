@@ -1,13 +1,16 @@
 ﻿using Business.Models;
+using Data.Contexts;
 using Data.Dtos;
 using Data.Factories;
 using Data.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace Data.Services;
 
-public class ClientService(IClientRepository clientRepository) : IClientService
+public class ClientService(IClientRepository clientRepository, DataContext context) : IClientService
 {
     private readonly IClientRepository _clientRepository = clientRepository;
+    private readonly DbContext _context = context;
 
     //Create
     public async Task<bool> CreateClientAsync(ClientRegistrationForm form)
@@ -15,12 +18,24 @@ public class ClientService(IClientRepository clientRepository) : IClientService
         var client = ClientFactory.Create(form);
         if (client == null)
         {
-            Console.WriteLine("The client object is null");
+            Console.WriteLine("The client is null");
             return false;
         }
 
-        var result = await _clientRepository.CreateAsync(client);
-        return result;
+        var transaction = await _context.Database.BeginTransactionAsync();
+        try
+        {
+            var result = await _clientRepository.CreateAsync(client);
+            await _clientRepository.SaveAsync();
+            await transaction.CommitAsync();
+            return result;
+        }
+        catch (Exception ex)
+        {
+            await transaction.RollbackAsync();
+            Console.WriteLine($"Error creating client :: {ex.Message}");
+            return false;
+        }
     }
 
     //Read
@@ -39,30 +54,58 @@ public class ClientService(IClientRepository clientRepository) : IClientService
     //Update 
     public async Task<Client?> UpdateClientAsync(ClientUpdateForm form)
     {
-        var client = await _clientRepository.GetAsync(x => x.Id == form.Id);
-        if (client == null)
+        var transaction = await _context.Database.BeginTransactionAsync();
+
+        try
         {
+            var client = await _clientRepository.GetAsync(x => x.Id == form.Id);
+            if (client == null)
+            {
+                return null;
+            }
+
+            client.CompanyName = form.CompanyName;
+
+            client = ClientFactory.Create(client.Id, form);
+
+            await _clientRepository.UpdateAsync(x => x.Id == form.Id, client);
+            await _clientRepository.SaveAsync();
+            await transaction.CommitAsync();
+
+            return client != null ? ClientFactory.Create(client) : null;
+        }
+        catch (Exception ex)
+        {
+            await transaction.RollbackAsync();
+            Console.WriteLine($"Error updating client :: {ex.Message}");
             return null;
         }
-
-        client.CompanyName = form.CompanyName;
-        
-        var result = await _clientRepository.UpdateAsync(x => x.Id == form.Id, client);
-        var updatedClient = await _clientRepository.GetAsync(x => x.Id == form.Id);
-        return updatedClient != null ? ClientFactory.Create(updatedClient) : null; 
     }
 
     //Delete
     public async Task<bool> DeleteClientAsync(int id)
     {
-        var client = await _clientRepository.GetAsync(x => x.Id == id);
-        if (client == null)
+        var transaction = await _context.Database.BeginTransactionAsync();
+
+        try
         {
+            var client = await _clientRepository.GetAsync(x => x.Id == id);
+            if (client == null)
+            {
+                return false;
+            }
+
+            var result = await _clientRepository.DeleteAsync(x => x.Id == client.Id);
+            await _clientRepository.SaveAsync();
+            await transaction.CommitAsync();
+            return result;
+        }
+        catch (Exception ex)
+        {
+            await transaction.RollbackAsync();
+            Console.WriteLine($"Error deleting client :: {ex.Message}");
             return false;
         }
-
-        var result = await _clientRepository.DeleteAsync(x => x.Id == client.Id);
-        return result;
     }
 }
 

@@ -69,7 +69,6 @@ public class ProjectRepository(DataContext context) : BaseRepository<ProjectEnti
             existingEntity.ProjectManager.LastName = updatedEntity.ProjectManager.LastName;
             existingEntity.Client.CompanyName = updatedEntity.Client.CompanyName;
 
-            await _context.SaveChangesAsync();
             return existingEntity;
         }
         catch (Exception ex)

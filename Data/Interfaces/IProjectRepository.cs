@@ -1,8 +1,8 @@
 ﻿using Data.Entites;
+using Data.Repositories;
 
-namespace Data.Interfaces
+namespace Data.Interfaces;
+
+public interface IProjectRepository : IBaseRepository<ProjectEntity>
 {
-    public interface IProjectRepository : IBaseRepository<ProjectEntity>
-    {
-    }
 }

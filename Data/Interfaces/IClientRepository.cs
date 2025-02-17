@@ -1,5 +1,5 @@
 ﻿using Data.Entites;
-using System.Linq.Expressions;
+using Data.Repositories;
 
 namespace Data.Interfaces
 {

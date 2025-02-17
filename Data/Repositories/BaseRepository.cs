@@ -1,6 +1,7 @@
 ﻿using Data.Contexts;
 using Data.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using System.Diagnostics;
 using System.Linq.Expressions;
 
@@ -10,6 +11,13 @@ public abstract class BaseRepository<TEntity>(DataContext context) : IBaseReposi
 {
     private readonly DataContext _context = context;
     private readonly DbSet<TEntity> _dbSet = context.Set<TEntity>();
+    private IDbContextTransaction _transaction = null!;
+
+    //Save
+    public virtual async Task<int> SaveAsync()
+    {
+        return await _context.SaveChangesAsync();
+    }
 
     //Create
     public virtual async Task<bool> CreateAsync(TEntity entity)
@@ -18,11 +26,9 @@ public abstract class BaseRepository<TEntity>(DataContext context) : IBaseReposi
         {
             return false;
         }
-
         try
         {
-            _dbSet.Add(entity);
-            await _context.SaveChangesAsync();
+            await _dbSet.AddAsync(entity);
             return true;
         }
         catch (Exception ex)
@@ -66,7 +72,6 @@ public abstract class BaseRepository<TEntity>(DataContext context) : IBaseReposi
             }
 
             _context.Entry(existingEntity).CurrentValues.SetValues(updatedEntity);
-            await _context.SaveChangesAsync();
             return existingEntity;
         }
         catch (Exception ex)
@@ -92,7 +97,6 @@ public abstract class BaseRepository<TEntity>(DataContext context) : IBaseReposi
             }
 
             _dbSet.Remove(existingEntity);
-            await _context.SaveChangesAsync();
             return true;
         }
         catch (Exception ex)
